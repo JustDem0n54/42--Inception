@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-service mariadb start
+mysqld_safe
 
 mysql -e "CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;"
 
