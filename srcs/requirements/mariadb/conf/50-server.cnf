@@ -1,14 +1,9 @@
 [mysqld]
-
 port 					= 3306
 socket					= /run/mysqld/mysqld.sock
 user                    = mysql
 datadir               	= /var/lib/mysql
-bind-address            =*
+bind-address            = 0.0.0.0
 
-expire_logs_days        = 10
-
-character-set-server  = utf8mb4
-collation-server      = utf8mb4_general_ci
 
 

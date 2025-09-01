@@ -1,17 +1,28 @@
 FROM debian:bookworm
 
-RUN apt update -y && apt install nginx -y
+RUN apt-get update && \
+    apt-get install -y nginx openssl curl gettext-base && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /etc/nginx/ssl && apt install openssl -y
-RUN openssl req -x509 -nodes -out /etc/nginx/ssl/inception.crt -keyout /etc/nginx/ssl/inception.key -subj "/C=FR/ST=OCC/L=PERPIGNAN/O=42/OU=42/CN=nrontard.42.fr/UID=nrontard"
+RUN mkdir -p /etc/ssl/private /etc/ssl/certs /etc/nginx/ssl
 
-RUN mkdir -p /var/run/nginx
+ARG DOMAIN_NAME
 
-COPY conf/nginx.conf /etc/nginx/nginx.conf
+ENV SSL_CERT=/etc/ssl/certs/nginx-selfsigned.crt
+ENV SSL_KEY=/etc/ssl/private/nginx-selfsigned.key
 
-RUN mkdir -p /var/www/wordpress
-RUN chmod 755 /var/www/wordpress && chown -R www-data:www-data /var/www/wordpress
+RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout ${SSL_KEY} \
+    -out ${SSL_CERT} \
+    -subj "/C=FR/ST=Paris/L=Paris/O=42/CN=lmatkows.42.fr" && \
+    cp ${SSL_KEY} /etc/nginx/ssl/nginx-selfsigned.key && \
+    cp ${SSL_CERT} /etc/nginx/ssl/nginx-selfsigned.crt
+
+COPY conf/nginx.conf /etc/nginx/nginx.conf.template
+
+RUN envsubst '${SSL_CERT} ${SSL_KEY}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
 
 EXPOSE 443
 
-CMD [ "nginx", "-g", "daemon off;" ]
+ENTRYPOINT ["nginx", "-g", "daemon off;"]

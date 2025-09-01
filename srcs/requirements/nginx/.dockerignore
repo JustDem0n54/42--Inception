@@ -1,0 +1,9 @@
+git
+*.bak
+*.swp
+*.tmp
+.vscode/
+.idea/
+.env
+logs/
+tmp/

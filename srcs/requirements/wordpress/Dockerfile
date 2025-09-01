@@ -1,25 +1,30 @@
 FROM debian:bookworm
 
-RUN apt update -y && apt install -y wget \ 
-	php-fpm \ 
-	php-mysql \
-	mariadb-client
+RUN apt-get update && apt-get install -y \
+						wget \
+						curl \
+						php8.2 \
+						php8.2-fpm \
+						php8.2-mysql \
+						unzip \
+						mariadb-client \
+						less && \
+	rm -rf /var/lib/apt/lists/* && \
+	mkdir -p /run/php
 
-RUN wget https://fr.wordpress.org/wordpress-6.8.2-fr_FR.tar.gz -P /var/www
+COPY conf/www.conf /etc/php/8.2/fpm/pool.d/www.conf
 
-RUN cd /var/www && tar -xzf wordpress-6.8.2-fr_FR.tar.gz && rm wordpress-6.8.2-fr_FR.tar.gz
+RUN wget https://fr.wordpress.org/wordpress-6.8.2-fr_FR.tar.gz -P /var/www && \
+	cd /var/www && tar -xzf wordpress-6.8.2-fr_FR.tar.gz && rm wordpress-6.8.2-fr_FR.tar.gz && \
+	chown -R root:root /var/www/wordpress
 
-RUN chown -R root:root /var/www/wordpress
+RUN wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+	chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp
 
-COPY conf/php.ini /etc/php/8.2/fpm/php.ini
+COPY conf/wp_config.sh /wp_config.sh
 
-RUN wget https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-RUN chmod +x wp-cli.phar && mv wp-cli.phar /usr/local/bin/wp
+RUN chmod +x /wp_config.sh
 
-COPY conf/wp_config.sh /usr/local/bin
-RUN chmod +x /usr/local/bin/wp_config.sh
-ENTRYPOINT [ "/usr/local/bin/wp_config.sh" ]
+WORKDIR /var/www/wordpress
 
-EXPOSE 9000
-
-CMD ["php-fpm8.2", "-F"]
+ENTRYPOINT [ "/wp_config.sh" ]
