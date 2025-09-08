@@ -1,64 +1,74 @@
 services:
-  nginx:
-    container_name: nginx
-    volumes:
-      - wordpress:/var/www/wordpress
-    networks:
-      - inception
-    depends_on:   
-      - wordpress
-    build: 
-      context: ./requirements/nginx
-      dockerfile: Dockerfile
-    env_file: .env
-    ports:
-      - "443:443" 	
-    restart: on-failure
-
-  mariadb:
-    container_name: mariadb		
-    networks:
-      - inception            		
-    build: 
-      context: ./requirements/mariadb 
-      dockerfile: Dockerfile		
-    env_file: .env                 
-    volumes:                       
-      - mariadb:/var/lib/mysql
-    restart: unless-stopped        
-    expose:                        
-      - "3306"
-  
   wordpress:
     container_name: wordpress
+    restart: always
     env_file: .env
+    build:
+      context: requirements/wordpress
+      dockerfile: Dockerfile
+    image: wordpress
+    expose:
+      - "9000"
+    depends_on:
+      - mariadb
     volumes:
-      - wordpress:/var/www/wordpress
+      - wordpress-data:/var/www/wordpress  # Volume to store WordPress files
     networks:
       - inception
-    build: 
-      context: ./requirements/wordpress
-      dockerfile: Dockerfile
-    depends_on:    
-      - mariadb
-    restart: on-failure
-    expose: 
-      - "9000"
 
+  nginx:
+    container_name: nginx
+    restart: always
+    build:
+      context: requirements/nginx
+      dockerfile: Dockerfile
+    image: nginx
+    env_file: .env
+    ports:
+      - "443:443"
+    networks:
+      - inception
+    volumes:
+      - wordpress-data:/var/www/wordpress  # Mount WordPress files volume
+    depends_on:
+      - wordpress
+
+  mariadb:
+    container_name: mariadb
+    env_file:
+        - .env
+    build:
+        context: ./requirements/mariadb
+    image: mariadb
+    healthcheck:
+        test: ["CMD", "mysqladmin", "ping", "--silent"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+    volumes:
+        - mariadb-data:/var/lib/mysql
+    networks:
+        - inception
+    expose:
+        - 3306
+    restart: unless-stopped                    # exposer la DB sur le port 3306 (optionnel)
+
+  # Bind mount for MariaDB
 volumes:
-  wordpress:
+  mariadb-data:
     driver: local
     driver_opts:
       type: none
+      device: '/home/${USER}/data/mariadb'  # Bind mount for MariaDB
       o: bind
-      device : ${HOME}/data/wordpress
-  mariadb:
-    driver : local
+
+  wordpress-data:
+    driver: local
     driver_opts:
       type: none
+      device: '/home/${USER}/data/wordpress'  # Bind mount for WordPress
       o: bind
-      device : ${HOME}/data/mariadb
 
 networks:
   inception:
-    driver: bridge
+    driver: bridge  # Create the network

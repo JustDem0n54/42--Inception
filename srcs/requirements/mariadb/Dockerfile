@@ -1,14 +1,14 @@
 FROM debian:bookworm
 
-RUN apt-get update && \
-	apt-get upgrade -y && \
-    apt-get install mariadb-server -y && \
-    apt-get clean && \
+RUN apt update && \
+    apt install mariadb-server -y && \
+    apt clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /var/run/mysqld && \
-	chown -R mysql:mysql /var/run/mysqld && \
-	chown -R mysql:mysql /var/lib/mysql
+RUN mkdir -p /run/mysqld
+	
+RUN chown -R mysql:mysql /run/mysqld
+RUN chmod -R 777 /run/mysqld
 
 COPY conf/50-server.cnf /etc/mysql/mariadb.conf.d/50-server.cnf
 

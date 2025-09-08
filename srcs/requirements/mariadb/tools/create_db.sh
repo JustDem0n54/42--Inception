@@ -1,7 +1,7 @@
 #!/bin/bash
 
 mysqld_safe &
-sleep 3
+sleep 8
 
 mariadb -e "CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;"
 

@@ -37,3 +37,4 @@ echo "Wordpress succesfully set up"
 
 echo "Launching Wordpress..."
 exec /usr/sbin/php-fpm8.2 -F
+
