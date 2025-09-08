@@ -7,8 +7,6 @@ RUN apt update && \
 
 RUN mkdir -p /etc/ssl/private /etc/ssl/certs /etc/nginx/ssl
 
-ARG DOMAIN_NAME
-
 ENV SSL_CERT=/etc/ssl/certs/nginx-selfsigned.crt
 ENV SSL_KEY=/etc/ssl/private/nginx-selfsigned.key
 

@@ -12,6 +12,8 @@ RUN apt update && apt install -y \
 	rm -rf /var/lib/apt/lists/* && \
 	mkdir -p /run/php
 
+WORKDIR /var/www/wordpress
+
 COPY conf/www.conf /etc/php/8.2/fpm/pool.d/www.conf
 
 RUN wget https://fr.wordpress.org/wordpress-6.8.2-fr_FR.tar.gz -P /var/www && \
@@ -25,6 +27,5 @@ COPY conf/wp_config.sh /wp_config.sh
 
 RUN chmod +x /wp_config.sh
 
-WORKDIR /var/www/wordpress
 
 ENTRYPOINT [ "/wp_config.sh" ]

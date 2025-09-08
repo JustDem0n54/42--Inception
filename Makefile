@@ -28,6 +28,14 @@ down:
 	@echo "🛑 Stopping services..."
 	$(DOCKER_COMPOSE) -f $(DC_FILE) down
 
+stop:
+	@echo "🛑 Stopping services..."
+	$(DOCKER_COMPOSE) -f $(DC_FILE) stop
+
+start:
+	@echo "🟢 Starting services..."
+	$(DOCKER_COMPOSE) -f $(DC_FILE) start
+
 restart: down up
 	@echo "♻️ Full restart of services..."
 
