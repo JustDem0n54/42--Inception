@@ -1,23 +1,13 @@
-FROM debian:bookworm
+FROM debian:12-slim 
 
-RUN apt update && \
-    apt install mariadb-server -y && \
-    apt clean && \
-    rm -rf /var/lib/apt/lists/*
+ENV DEBIAN_FRONTEND=noninteractive
 
-RUN mkdir -p /var/lib/mysql /run/mysqld \
-    && chown -R mysql:mysql /var/lib/mysql /run/mysqld \
-    && chmod 755 /var/lib/mysql
-
-RUN mysql_install_db --user=mysql --ldata=/var/lib/mysql
+RUN apt update && apt install mariadb-server -y
 
 COPY conf/50-server.cnf /etc/mysql/mariadb.conf.d/50-server.cnf
-
-COPY tools/create_db.sh /create_db.sh
-RUN chmod +x /create_db.sh
-
-USER mysql
+COPY conf/initmariadb.sh  /initmariadb.sh
+RUN chmod +x /initmariadb.sh
 
 EXPOSE 3306
 
-ENTRYPOINT ["/bin/sh", "create_db.sh"]
+ENTRYPOINT ["/initmariadb.sh"]

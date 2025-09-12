@@ -1,26 +1,21 @@
-FROM debian:bookworm
+FROM debian:12-slim 
 
-RUN apt update && \
-    apt install -y nginx openssl curl gettext-base && \
-    apt clean && \
-    rm -rf /var/lib/apt/lists/*
+ENV DEBIAN_FRONTEND=noninteractive
 
-RUN mkdir -p /etc/ssl/private /etc/ssl/certs /etc/nginx/ssl
+RUN apt update && apt install nginx -y
 
-ENV SSL_CERT=/etc/ssl/certs/nginx-selfsigned.crt
-ENV SSL_KEY=/etc/ssl/private/nginx-selfsigned.key
+RUN mkdir -p /etc/nginx/tls && apt install openssl -y \
+    && openssl req -x509 -nodes -out /etc/nginx/tls/inception.certif \
+    -keyout /etc/nginx/tls/inception.key \
+    -subj "/C=FR/ST=OCCITANIE/L=PERPIGNAN/0=42/OU=42/CN=edelanno.42.fr/UID=edelanno"
 
-RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    -keyout ${SSL_KEY} \
-    -out ${SSL_CERT} \
-    -subj "/C=FR/ST=Paris/L=Paris/O=42/CN=nrontard.42.fr" && \
-    cp ${SSL_KEY} /etc/nginx/ssl/nginx-selfsigned.key && \
-    cp ${SSL_CERT} /etc/nginx/ssl/nginx-selfsigned.crt
+RUN mkdir -p /var/run/nginx
 
-COPY conf/nginx.conf /etc/nginx/nginx.conf.template
+COPY conf/nginx.conf /etc/nginx/nginx.conf
 
-RUN envsubst '${SSL_CERT} ${SSL_KEY}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+RUN mkdir -p /var/www/html && chmod 755 /var/www/html;
+RUN chown -R www-data:www-data /var/www/html;
+
+CMD ["nginx", "-g", "daemon off;"]
 
 EXPOSE 443
-
-ENTRYPOINT ["nginx", "-g", "daemon off;"]
