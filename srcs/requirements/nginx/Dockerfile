@@ -7,7 +7,7 @@ RUN apt update && apt install nginx -y
 RUN mkdir -p /etc/nginx/tls && apt install openssl -y \
     && openssl req -x509 -nodes -out /etc/nginx/tls/inception.certif \
     -keyout /etc/nginx/tls/inception.key \
-    -subj "/C=FR/ST=OCCITANIE/L=PERPIGNAN/0=42/OU=42/CN=edelanno.42.fr/UID=edelanno"
+    -subj "/C=FR/ST=OCCITANIE/L=PERPIGNAN/0=42/OU=42/CN=nrontard.42.fr/UID=nrontard"
 
 RUN mkdir -p /var/run/nginx
 
